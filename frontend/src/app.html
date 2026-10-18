@@ -1,0 +1,17 @@
+<!doctype html>
+<html lang="en" class="dark" data-theme="music">
+	<head>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1" />
+		<meta name="text-scale" content="scale" />
+		<!-- In the page itself, so that the browser does not ask for /favicon.ico (the site draws its head in the browser). -->
+		<link rel="icon" href="%sveltekit.assets%/favicon.svg" type="image/svg+xml" />
+		<!-- The covers of the clips and the player of YouTube: the connection is ready when a clip is pressed. -->
+		<link rel="preconnect" href="https://i.ytimg.com" />
+		<link rel="preconnect" href="https://www.youtube-nocookie.com" />
+		%sveltekit.head%
+	</head>
+	<body data-sveltekit-preload-data="hover">
+		<div style="display: contents">%sveltekit.body%</div>
+	</body>
+</html>

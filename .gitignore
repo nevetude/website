@@ -1,0 +1,23 @@
+# secrets
+.env
+.env.*
+!.env.example
+
+# python
+__pycache__/
+*.py[cod]
+.venv/
+.ruff_cache/
+.pytest_cache/
+.coverage
+.mypy_cache/
+
+# node
+node_modules/
+.svelte-kit/
+build/
+dist/
+
+# local
+.claude/settings.local.json
+.DS_Store

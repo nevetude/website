@@ -1,0 +1,39 @@
+16:02:59 output: /home/user/projects/music/docs/rate-limit/20261015-160259
+16:02:59 public: burst-5: 5 requests at the same moment
+16:03:01 HTTP Request: GET https://genius.com/api/artists/100021?text_format=plain "HTTP/1.1 403 Forbidden"
+16:03:01 public: 403 on request 3 (burst-5) 
+16:03:01 HTTP Request: GET https://genius.com/api/artists/100000?text_format=plain "HTTP/1.1 403 Forbidden"
+16:03:01 HTTP Request: GET https://genius.com/api/artists/100014?text_format=plain "HTTP/1.1 403 Forbidden"
+16:03:01 public: 403 on request 2 (burst-5) 
+16:03:01 HTTP Request: GET https://genius.com/api/artists/100007?text_format=plain "HTTP/1.1 403 Forbidden"
+16:03:01 public: 403 on request 1 (burst-5) 
+16:03:01 public: the load stops: 3 errors in a row (403, 5xx, network): a block?
+16:03:02 HTTP Request: GET https://genius.com/api/artists/100028?text_format=plain "HTTP/1.1 403 Forbidden"
+16:03:02 public: 403 on request 4 (burst-5) 
+16:03:02 public: 403 on request 0 (burst-5) 
+16:03:02 public: burst-5 done: {"requests": 5, "statuses": {"403": 5}, "real_rps": null, "took_ms_median": 2447, "took_ms_max": 3339}
+16:03:02 public: recovery: one request every 5 s, for 900 s at most
+16:03:08 HTTP Request: GET https://genius.com/api/artists/100035?text_format=plain "HTTP/1.1 403 Forbidden"
+16:03:08 public: 403 on request 5 (recovery) 
+16:03:08 public: recovery attempt 1: 403
+16:03:15 HTTP Request: GET https://genius.com/api/artists/100042?text_format=plain "HTTP/1.1 403 Forbidden"
+16:03:15 public: 403 on request 6 (recovery) 
+16:03:15 public: recovery attempt 2: 403
+16:03:21 HTTP Request: GET https://genius.com/api/artists/100049?text_format=plain "HTTP/1.1 403 Forbidden"
+16:03:21 public: 403 on request 7 (recovery) 
+16:03:21 public: recovery attempt 3: 403
+16:03:27 HTTP Request: GET https://genius.com/api/artists/100056?text_format=plain "HTTP/1.1 403 Forbidden"
+16:03:27 public: 403 on request 8 (recovery) 
+16:03:27 public: recovery attempt 4: 403
+16:03:34 HTTP Request: GET https://genius.com/api/artists/100063?text_format=plain "HTTP/1.1 403 Forbidden"
+16:03:34 public: 403 on request 9 (recovery) 
+16:03:34 public: recovery attempt 5: 403
+16:03:40 HTTP Request: GET https://genius.com/api/artists/100070?text_format=plain "HTTP/1.1 403 Forbidden"
+16:03:40 public: 403 on request 10 (recovery) 
+16:03:40 public: recovery attempt 6: 403
+16:03:45 HTTP Request: GET https://genius.com/api/artists/100077?text_format=plain "HTTP/1.1 403 Forbidden"
+16:03:45 public: 403 on request 11 (recovery) 
+16:03:45 public: recovery attempt 7: 403
+16:03:51 HTTP Request: GET https://genius.com/api/artists/100084?text_format=plain "HTTP/1.1 403 Forbidden"
+16:03:51 public: 403 on request 12 (recovery) 
+16:03:51 public: recovery attempt 8: 403
