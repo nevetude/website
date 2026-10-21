@@ -14,9 +14,10 @@
 		openAll: boolean; // every category follows this; a click on the title still opens just one
 		resetKey: string; // a new key (another order or role) starts the strip from its beginning
 		columns?: number; // cards per row of the grid view, when the place decides it and not the width
+		note?: string; // a third line on every card of the grid view
 	};
 
-	let { title, albums, view, openAll, resetKey, columns }: Props = $props();
+	let { title, albums, view, openAll, resetKey, columns, note }: Props = $props();
 
 	let expanded = $derived(openAll);
 	let scroller = $state<HTMLElement | null>(null);
@@ -76,7 +77,8 @@
 </script>
 
 <section class="group/category space-y-1">
-	<header class="flex items-center gap-3">
+	<!-- Without a title the header is only the controls of the strip: nothing to show while everything fits. -->
+	<header class="flex items-center gap-3" class:hidden={!title && !scrolls}>
 		{#if fits}
 			<h3
 				class="flex h-6 items-center text-sm font-medium text-surface-content"
@@ -153,7 +155,8 @@
 			<AlbumCard
 				{album}
 				layout={view}
-				height={cardHeight(width, view, cells)}
+				height={cardHeight(width, view, cells, !!note)}
+				{note}
 				cover={coverSize(width, cells)}
 			/>
 		{/each}

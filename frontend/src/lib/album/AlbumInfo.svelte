@@ -28,7 +28,9 @@
 </script>
 
 <!-- Two blocks, for the two rows of the grid of the page: the title with the facts of the release, and the facts about it. -->
-<header class="space-y-5 min-[1200px]:col-start-1 min-[1200px]:row-start-1">
+<header
+	class="space-y-5 rounded-t-xl bg-surface-200 px-4 pt-4 min-[1200px]:col-start-1 min-[1200px]:row-start-1"
+>
 	<div class="space-y-2">
 		<!-- One line, always: a long title is cut with "…" (the whole of it is in the tooltip), so the header keeps its height. -->
 		<h1
@@ -55,7 +57,7 @@
 				<!-- No <wbr>: it would let the line break although it is "nowrap". -->
 				{#each album.artists as artist, i (artist.id)}{#if i}<span
 							class="mr-[0.3em] text-surface-content/40">,</span
-						>{/if}<a href={resolve('/artists/[id]', { id: String(artist.id) })}
+						>{/if}<a href={resolve('/artists/[id]', { id: String(artist.id) })} class="artist"
 						>{artist.base_name}</a
 					>{/each}
 			</p>
@@ -87,12 +89,13 @@
 </header>
 
 <!-- The facts about the release, in two parts for two rows of the grid of the page: the tiles of the descriptors
-     stand beside the second one, whatever the first one holds. -->
-<dl class="mt-[12.8px] min-[1200px]:col-start-1 min-[1200px]:row-start-2">
+     stand beside the second one, whatever the first one holds. The title and the groups share one grey panel: the
+     gap before this group is padding, not margin, so the grey has no seam. -->
+<dl class="bg-surface-200 px-4 pt-[12.8px] min-[1200px]:col-start-1 min-[1200px]:row-start-2">
 	<FactRow label="Country">{MOCK.country}</FactRow>
 	{#if album.language}<FactRow label="Language">{languageName(album.language)}</FactRow>{/if}
 </dl>
-<dl class="min-[1200px]:col-start-1 min-[1200px]:row-start-3">
+<dl class="rounded-b-xl bg-surface-200 px-4 min-[1200px]:col-start-1 min-[1200px]:row-start-3">
 	<FactRow label="Scenes">{MOCK.scenes}</FactRow>
 	<FactRow label="Genres">
 		<CommaList items={MOCK.genres} />

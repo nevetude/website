@@ -4,11 +4,11 @@
 	import CreditNames from '#lib/album/CreditNames.svelte';
 	import FactRow from '#lib/entity/FactRow.svelte';
 
-	let { groups }: { groups: CreditGroup[] } = $props();
+	let { groups, main }: { groups: CreditGroup[]; main: { id: number }[] } = $props();
 </script>
 
 <dl>
 	{#each sortRoles(groups) as group (group.role)}
-		<FactRow label={group.role}><CreditNames artists={group.artists} /></FactRow>
+		<FactRow label={group.role}><CreditNames artists={group.artists} {main} /></FactRow>
 	{/each}
 </dl>

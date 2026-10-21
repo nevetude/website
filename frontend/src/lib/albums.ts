@@ -60,6 +60,19 @@ export const coverHint = (album: Pick<AlbumDetail, 'cover_secondary_color'>, sha
 		? `color-mix(in oklab, ${album.cover_secondary_color} ${share}%, var(--color-surface-200))`
 		: undefined;
 
+/**
+ * The colour of the names of artists and producers: the hue of the cover, light enough to read on the dark page and
+ * pale enough to stay a tint (a vivid cover would make the names shout).
+ */
+export const artistTint = (album: Pick<AlbumDetail, 'cover_secondary_color'>) =>
+	album.cover_secondary_color
+		? `oklch(from ${album.cover_secondary_color} clamp(0.72, l, 0.88) min(c, 0.12) h)`
+		: undefined;
+
+/** Which of the names are the artists of the album itself: only they get the tint, whatever their role in a track. */
+export const ofAlbum = (list: { id: number }[], artists: { id: number }[]) =>
+	list.map(({ id }) => artists.some((artist) => artist.id === id));
+
 /** Whether the artists of a track are not just the artists of the album: only then are they worth showing. */
 export const differs = (track: { id: number }[], album: { id: number }[]) =>
 	track.length !== album.length || track.some(({ id }) => !album.some((a) => a.id === id));
@@ -108,7 +121,7 @@ export function popularity(tracks: { song_id: number; view_count: number | null 
  * its cover is as big as the cover of a grid card and nothing is under it. The strip of a category and its
  * opened grid both take their columns from here, so opening a category never resizes a card.
  */
-export const CARD = { min: 150, span: 2, text: 44, pad: 24 } as const; // pad: the padding of a card, both sides
+export const CARD = { min: 150, span: 2, text: 44, note: 16, pad: 24 } as const; // pad: the padding of a card, both sides; note: the third line
 
 /** How many cells fit in a row of this width. */
 export const cellsPerRow = (width: number) => Math.max(1, Math.floor(width / CARD.min));
@@ -124,9 +137,13 @@ export const cardSpan = (width: number, view: 'grid' | 'list', cells = cellsPerR
 export const perRow = (width: number, view: 'grid' | 'list', cells = cellsPerRow(width)) =>
 	Math.floor(cells / cardSpan(width, view, cells));
 
-/** The height of a card, in px. Always a number, so that a change of view can be animated. */
-export const cardHeight = (width: number, view: 'grid' | 'list', cells = cellsPerRow(width)) =>
-	width / cells + (view === 'grid' ? CARD.text : 0);
+/** The height of a card, in px. Always a number, so that a change of view can be animated. A `note` is a third line of the grid card. */
+export const cardHeight = (
+	width: number,
+	view: 'grid' | 'list',
+	cells = cellsPerRow(width),
+	note = false
+) => width / cells + (view === 'grid' ? CARD.text + (note ? CARD.note : 0) : 0);
 
 /** The side of a cover, the same in both views: a cell without the padding of its card. */
 export const coverSize = (width: number, cells = cellsPerRow(width)) => width / cells - CARD.pad;

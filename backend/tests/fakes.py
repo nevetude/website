@@ -164,6 +164,7 @@ class FakeGenius:
         self.songs, self.discographies = songs or {}, discographies or {}
         self.missing, self.page_size = missing or set(), page_size
         self.calls: list[str] = []
+        self.connection = None
 
     async def get(
         self, path: str, params: dict[str, Any] | None = None, record: Recorder | None = None

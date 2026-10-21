@@ -21,7 +21,14 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.sql import literal_column
 from sqlalchemy.sql.elements import SQLColumnExpression, UnaryExpression
 
-from music_backend.api.schemas import ChangeOut, DomNode, DomRef, ImportRef
+from music_backend.api.schemas import (
+    ArtistAlbum,
+    ArtistName,
+    ChangeOut,
+    DomNode,
+    DomRef,
+    ImportRef,
+)
 from music_backend.enums import ImportKind, SongArtistRole
 from music_backend.models import (
     Album,
@@ -214,3 +221,25 @@ def album_card_columns() -> list[Any]:
         func.coalesce(artists, empty).label("artists"),
         func.coalesce(labels, empty).label("labels"),
     ]
+
+
+async def producers_of(session: AsyncSession, song_ids: list[int]) -> dict[int, list[ArtistName]]:
+    """The artists credited as "Producer" on each of the songs, in the order they were imported."""
+    rows = await session.execute(
+        select(SongCredit.song_id, Artist.id, Artist.base_name)
+        .join(Artist, Artist.id == SongCredit.artist_id)
+        .join(CreditRole, CreditRole.id == SongCredit.role_id)
+        .where(CreditRole.name == "Producer", SongCredit.song_id.in_(song_ids))
+        .order_by(SongCredit.id)
+    )
+    producers: dict[int, list[ArtistName]] = {}
+    for song_id, artist_id, name in rows:
+        producers.setdefault(song_id, []).append(ArtistName(id=artist_id, base_name=name))
+    return producers
+
+
+async def album_cards(session: AsyncSession, ids: list[int]) -> dict[int, ArtistAlbum]:
+    """The album card of each id (see `album_card_columns`), for a list that is not an artist's."""
+    rows = await session.execute(select(*album_card_columns()).where(Album.id.in_(ids)))
+    # The roles are an artist's, and this is not an artist's list.
+    return {row.id: ArtistAlbum(**row._mapping, roles=[]) for row in rows}

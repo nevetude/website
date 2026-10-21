@@ -1,4 +1,5 @@
 from functools import lru_cache
+from pathlib import Path
 
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
@@ -15,6 +16,10 @@ class Settings(BaseSettings):
     genius_min_interval_s: float = 0.2
     # Pause before the first retry of a failed request; it grows with each further attempt.
     genius_retry_backoff_s: float = 2.0
+    # The lyrics are not in any API and are never scraped: they are text files put here by hand, one per song, named
+    # by the Genius id of the song (`<genius id>.txt`); `demo.txt` is shown for a song that has no file of its own.
+    # The folder is not in git (`lyrics/` in `.gitignore`).
+    lyrics_dir: Path = Path(__file__).resolve().parents[3] / "lyrics"
     # Local-only shortcut: every request acts as the admin user. Turn off when real login exists.
     dev_auto_login: bool = True
 

@@ -11,8 +11,10 @@
 	const all = $derived<Crumb[]>([{ label: 'Home', href: resolve('/') }, ...trail]);
 </script>
 
-<nav aria-label="Breadcrumbs" class="mb-2 text-[13px]">
-	<ol class="flex flex-wrap items-center gap-x-1.5 gap-y-1 text-surface-content/60">
+<!-- Out of the flow, in the 2rem between the header and the first block of the page (`main` is positioned and has that
+     much room at the top): the block stands 1.5rem under the header whether the page has breadcrumbs or not. -->
+<nav aria-label="Breadcrumbs" class="absolute inset-x-6 top-0 flex h-8 items-center text-[13px]">
+	<ol class="flex min-w-0 items-center gap-x-1.5 overflow-hidden text-surface-content/60">
 		{#each all as crumb, i (i)}
 			{#if i > 0}<li aria-hidden="true"><ChevronRight class="size-3.5" /></li>{/if}
 			<li class="min-w-0">

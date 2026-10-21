@@ -14,6 +14,7 @@ Status: accepted. "Import" is the name for pulling data from Genius into our dat
 ## API (follows ADR 0003)
 - `GET  /api/v1/genius/search/artists?q=`
 - `POST /api/v1/imports` (`{kind, genius_id}`, returns 202 and the job; an active job for the same target is returned instead of a duplicate)
+- `GET  /api/v1/imports/monitor`: the server behind the latest Genius answer (address, Cloudflare edge, origin, protocol, TLS; kept in memory by the client, null after a restart until the first request) and the response time and answers over the latest 100 logged requests. Everything comes from our own requests, no external lookup service (decided 2026-10-21: no GeoIP, no country or provider name).
 - `GET  /api/v1/imports`, `GET /api/v1/imports/{id}`, `GET /api/v1/imports/{id}/requests`, `POST /api/v1/imports/{id}/cancel`
 
 ## Tables

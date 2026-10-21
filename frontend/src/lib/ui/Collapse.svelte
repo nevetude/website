@@ -1,12 +1,9 @@
 <script lang="ts">
-	import ChevronDown from '@lucide/svelte/icons/chevron-down';
-	import ChevronUp from '@lucide/svelte/icons/chevron-up';
 	import type { Snippet } from 'svelte';
 	import { watchHeight } from '#lib/ui/watchSize.js';
 
 	// A block that is `height` pixels high while it is closed, whatever is in it: what does not fit fades out and a grey
-	// chevron down ("Show all") stands under it. Opened, the whole block is shown with a chevron up ("Show less") at
-	// its end. Opening and closing are smooth. A block that is not much higher than `height` is shown as it is. `fade` is the colour of the
+	// "Show more" stands under it. Opened, the whole block is shown with "Show less" at its end. Opening and closing are smooth. A block that is not much higher than `height` is shown as it is. `fade` is the colour of the
 	// ground the block stands on, which the text fades into; `class` (for the rounding of a block that has a ground
 	// of its own) is put on the box that cuts the block.
 	type Props = { height: number; fade: string; class?: string; children: Snippet };
@@ -40,12 +37,10 @@
 			<button
 				type="button"
 				aria-expanded="true"
-				aria-label="Show less"
-				title="Show less"
-				class="mx-auto mt-2 block text-surface-content/50 hover:text-surface-content/80"
+				class="mx-auto mt-2 block text-sm text-surface-content/50 hover:text-surface-content/80"
 				onclick={toggle}
 			>
-				<ChevronUp class="size-6" aria-hidden="true" />
+				Show less
 			</button>
 		{/if}
 	</div>
@@ -57,12 +52,10 @@
 			<button
 				type="button"
 				aria-expanded="false"
-				aria-label="Show all"
-				title="Show all"
-				class="text-surface-content/50 hover:text-surface-content/80"
+				class="text-sm text-surface-content/50 hover:text-surface-content/80"
 				onclick={toggle}
 			>
-				<ChevronDown class="size-6" aria-hidden="true" />
+				Show more
 			</button>
 		</div>
 	{/if}

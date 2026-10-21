@@ -1,16 +1,21 @@
-import { api, type Job, type RequestRow } from '#lib/api.js';
+import { api, type Job, type Monitor, type RequestRow } from '#lib/api.js';
 import { isActive } from '#lib/imports.js';
 
 /** The import jobs shown on the page. The page polls `refresh`: once a second while a job is active. */
 export class ImportJobs {
 	jobs = $state<Job[]>([]);
+	monitor = $state<Monitor | null>(null);
 	offline = $state(false);
 	active = $derived(this.jobs.some(isActive));
 
 	async refresh() {
 		try {
-			const { data } = await api.GET('/api/v1/imports', { params: { query: { limit: 10 } } });
+			const [{ data }, { data: monitor }] = await Promise.all([
+				api.GET('/api/v1/imports', { params: { query: { limit: 10 } } }),
+				api.GET('/api/v1/imports/monitor')
+			]);
 			if (data) this.jobs = data;
+			if (monitor) this.monitor = monitor;
 			this.offline = !data;
 		} catch {
 			this.offline = true; // the backend is not running

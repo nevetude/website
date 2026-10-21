@@ -7,7 +7,7 @@
 	import Disclosure from '#lib/ui/Disclosure.svelte';
 
 	type Props = {
-		subject: 'artist' | 'album';
+		subject: 'artist' | 'album' | 'song';
 		createdAt: string;
 		updatedAt: string;
 		imports: ArtistDetail['imports'];

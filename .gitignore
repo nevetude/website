@@ -21,3 +21,6 @@ dist/
 # local
 .claude/settings.local.json
 .DS_Store
+
+# Lyrics are put here by hand, one file per song (`<genius id>.txt`): never committed
+lyrics/

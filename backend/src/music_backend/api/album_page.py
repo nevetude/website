@@ -14,14 +14,23 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from music_backend.api.deps import SessionDep, UserDep
 from music_backend.api.queries import (
-    album_card_columns,
+    album_cards,
     count,
     description_tree,
     get_or_404,
     imports_and_history,
+    producers_of,
     raw_of,
 )
-from music_backend.api.schemas import ArtistAlbum, ArtistRef, ChangeOut, DomNode, DomRef, ImportRef
+from music_backend.api.schemas import (
+    ArtistAlbum,
+    ArtistName,
+    ArtistRef,
+    ChangeOut,
+    DomNode,
+    DomRef,
+    ImportRef,
+)
 from music_backend.enums import (
     AlbumRelationType,
     DatePrecision,
@@ -117,11 +126,6 @@ class AlbumDetail(AlbumCore):
     history: list[ChangeOut]
 
 
-class ArtistName(BaseModel):
-    id: int
-    base_name: str
-
-
 class AlbumVideoOut(BaseModel):
     song_id: int
     song_name: str
@@ -151,12 +155,6 @@ class AlbumTrackOut(BaseModel):
     producers: list[ArtistName]  # credited as "Producer", in the order they were imported
 
 
-async def _cards(session: AsyncSession, ids: list[int]) -> dict[int, ArtistAlbum]:
-    rows = await session.execute(select(*album_card_columns()).where(Album.id.in_(ids)))
-    # The roles are an artist's, and this is not an artist's list.
-    return {row.id: ArtistAlbum(**row._mapping, roles=[]) for row in rows}
-
-
 async def _related(session: AsyncSession, album_id: int) -> list[RelatedAlbums]:
     rows = (
         await session.execute(
@@ -171,7 +169,7 @@ async def _related(session: AsyncSession, album_id: int) -> list[RelatedAlbums]:
         inverse = row.related_album_id == album_id
         other = row.album_id if inverse else row.related_album_id
         found.setdefault((row.type, inverse), []).append(other)
-    cards = await _cards(session, [i for ids in found.values() for i in ids])
+    cards = await album_cards(session, [i for ids in found.values() for i in ids])
     return [
         RelatedAlbums(
             type=kind,
@@ -308,19 +306,7 @@ async def list_album_tracks(album_id: int, session: SessionDep, _: UserDep) -> l
         .where(SongArtist.song_id.in_([song.id for _, song in rows]))
         .order_by(SongArtist.position.nulls_last(), Artist.base_name)
     )
-    produced = await session.execute(
-        select(SongCredit.song_id, Artist.id, Artist.base_name)
-        .join(Artist, Artist.id == SongCredit.artist_id)
-        .join(CreditRole, CreditRole.id == SongCredit.role_id)
-        .where(
-            CreditRole.name == "Producer",
-            SongCredit.song_id.in_([song.id for _, song in rows]),
-        )
-        .order_by(SongCredit.id)
-    )
-    producers: dict[int, list[ArtistName]] = {}
-    for song_id, artist_id, name in produced:
-        producers.setdefault(song_id, []).append(ArtistName(id=artist_id, base_name=name))
+    producers = await producers_of(session, [song.id for _, song in rows])
     primary: dict[int, list[ArtistName]] = {}
     featured: dict[int, list[ArtistName]] = {}
     for song_id, role, artist_id, name in credited:

@@ -1,13 +1,10 @@
 <script lang="ts" generics="T">
-	import ChevronLeft from '@lucide/svelte/icons/chevron-left';
-	import ChevronRight from '@lucide/svelte/icons/chevron-right';
 	import { tick, type Snippet } from 'svelte';
 	import { watchWidth } from '#lib/ui/watchSize.js';
 
 	// A list written in running text ("a, b, c"), cut to a few lines. It is cut between two items, never in the
-	// middle of one and never after a comma: the last item that fits is followed by "…" and a grey chevron to the
-	// right ("Show all") on the same line. Opened, the whole list is shown with a grey chevron to the left ("Show
-	// less") after it. Opening and closing are smooth. With `float` the opened list is laid over the page instead of
+	// middle of one and never after a comma: the last item that fits is followed by "…" and a grey "Show more" on
+	// the same line. Opened, the whole list is shown with a grey "Show less" after it. Opening and closing are smooth. With `float` the opened list is laid over the page instead of
 	// pushing it down (for a place whose height must not change). With `tiles` the items are tiles side by side (no commas),
 	// the line is as high as a row of tiles. `open` and `full` (the height of the whole list) can be bound, for a
 	// page that has to make room for the opened list.
@@ -126,26 +123,21 @@
 				>{#if clamped && !open && i === (shown ?? 0) - 1}<span class={GREY}>
 						…<button
 							type="button"
-							aria-label="Show all"
-							title="Show all"
-							class="inline-block align-middle"
-							onclick={() => toggle(true)}
-							><ChevronRight class="size-5" aria-hidden="true" /></button
+							class="ml-1 inline-block align-baseline"
+							onclick={() => toggle(true)}>Show more</button
 						></span
 					>{/if}
 			{/each}
 			{#if clamped && open}
 				<button
 					type="button"
-					aria-label="Show less"
-					title="Show less"
-					class="{GREY} inline-block align-middle"
-					onclick={() => toggle(false)}><ChevronLeft class="size-5" aria-hidden="true" /></button
+					class="{GREY} inline-block align-baseline"
+					onclick={() => toggle(false)}>Show less</button
 				>
 			{/if}
 			{#if shown === null}
 				<span data-suffix class="invisible absolute whitespace-nowrap"
-					>…<ChevronRight class="inline size-5 align-middle" /></span
+					>…<span class="ml-1">Show more</span></span
 				>
 			{/if}
 		</div>

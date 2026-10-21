@@ -50,7 +50,8 @@
 		background: var(--color-surface-300);
 		color: var(--color-surface-content);
 		font-family: var(--font-sans);
-		font-size: 14px; /* every rem on the site is a share of this: one number to scale everything */
+		font-size: 14px;
+		/* every rem on the site is a share of this: one number to scale everything */
 	}
 
 	body {
@@ -67,22 +68,35 @@
 	}
 }
 
+/* The name of an artist or a producer: a tint of the colour of the cover where the page sets `--artist-color` (the album
+   page), the colour of the text around it everywhere else. Inside a link that is hovered it goes white with the rest. */
+.artist {
+	color: var(--artist-color, inherit);
+}
+
+a:hover .artist {
+	color: inherit;
+}
+
 /* Every link brightens to white when the pointer is on it, smoothly. Outside of any layer, so that it also wins over
    the colour classes of the links. A link that moves something else (the album card) sets its own transition inline. */
 a {
 	transition: color 150ms ease-out;
 }
+
 a:hover {
 	color: white;
 }
 
-/* A box with a square bite out of its top right corner. Rounded: the inner corner of the bite and the corner where it
+/* A box with a bite out of its top right corner (square unless a card asks for a wider one). Rounded: the inner corner of the bite and the corner where it
    meets the top edge (the one where it meets the right edge stays square). A mask, because `corner-shape` can round
    the inner corner only. The mask is the sum of the parts that stay: the left part, the part under the bite, the part
-   that makes the rounded top corner, and the piece that rounds the inner corner. `--n` is the size of the bite, `--ri`
-   and `--rc` the radii of the two rounded corners. */
+   that makes the rounded top corner, and the piece that rounds the inner corner. `--n` is the width of the bite and
+   `--nh` its height (both 27px unless `--bite-w` and `--bite-h` are set on the card), `--ri` and `--rc` the radii of
+   the two rounded corners. */
 .notched-right {
-	--n: 27px;
+	--n: var(--bite-w, 27px);
+	--nh: var(--bite-h, 27px);
 	--ri: 6px;
 	--rc: 6px;
 	mask-repeat: no-repeat;
@@ -94,14 +108,14 @@ a:hover {
 		calc(100% - var(--n) - var(--rc)) 100%,
 		var(--rc) calc(100% - var(--rc)),
 		calc(var(--rc) * 2) calc(var(--rc) * 2),
-		100% calc(100% - var(--n)),
+		100% calc(100% - var(--nh)),
 		var(--ri) var(--ri);
 	mask-position:
 		left top,
 		right var(--n) top var(--rc),
 		right var(--n) top 0,
 		left bottom,
-		right calc(var(--n) - var(--ri)) top calc(var(--n) - var(--ri));
+		right calc(var(--n) - var(--ri)) top calc(var(--nh) - var(--ri));
 }
 
 /* The bars on the picture of the clip that is playing: each one rises and falls on its own time. The height is what
@@ -111,10 +125,12 @@ a:hover {
 	100% {
 		height: 25%;
 	}
+
 	50% {
 		height: 100%;
 	}
 }
+
 .equalizer-bar {
 	animation: equalizer 1s ease-in-out infinite;
 }

@@ -254,6 +254,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/imports/monitor": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get Monitor
+         * @description The server we import from and how it answers. Declared before `/{job_id}` so that the path is not read as an id.
+         */
+        get: operations["get_monitor"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/imports/{job_id}": {
         parameters: {
             query?: never;
@@ -303,6 +323,63 @@ export interface paths {
         put?: never;
         /** Cancel Import */
         post: operations["cancel_import"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/songs/{song_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Song */
+        get: operations["get_song"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/songs/{song_id}/raw": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get Song Raw
+         * @description The untouched Genius response the song was last imported from (null for a stub).
+         */
+        get: operations["get_song_raw"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/songs/{song_id}/lyrics": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get Song Lyrics
+         * @description The text of the song from `<lyrics_dir>/<genius id>.txt`; null when there is no such file.
+         */
+        get: operations["get_song_lyrics"];
+        put?: never;
+        post?: never;
         delete?: never;
         options?: never;
         head?: never;
@@ -450,6 +527,28 @@ export interface components {
             /** Release Date */
             release_date: string | null;
             release_date_precision: components["schemas"]["DatePrecision"] | null;
+        };
+        /**
+         * AnswersOut
+         * @description What the latest `MONITOR_WINDOW` requests got back.
+         */
+        AnswersOut: {
+            /** Requests */
+            requests: number;
+            /** Ok */
+            ok: number;
+            /** Client Errors */
+            client_errors: number;
+            /** Rate Limited */
+            rate_limited: number;
+            /** Server Errors */
+            server_errors: number;
+            /** No Answer */
+            no_answer: number;
+            /** Retries */
+            retries: number;
+            /** Bytes */
+            bytes: number;
         };
         /** ArtistAlbum */
         ArtistAlbum: {
@@ -627,6 +726,8 @@ export interface components {
             import_state: components["schemas"]["ImportState"];
             /** Roles */
             roles: string[];
+            /** Producers */
+            producers: components["schemas"]["ArtistName"][];
         };
         /**
          * ArtistType
@@ -671,6 +772,35 @@ export interface components {
              * Format: date-time
              */
             created_at: string;
+        };
+        /**
+         * ConnectionOut
+         * @description The server behind the latest answer of Genius; null until the first request after a start.
+         */
+        ConnectionOut: {
+            /** Host */
+            host: string;
+            /** Ip */
+            ip: string | null;
+            /** Http Version */
+            http_version: string;
+            /** Tls Version */
+            tls_version: string | null;
+            /** Cipher */
+            cipher: string | null;
+            /** Server */
+            server: string | null;
+            /** Edge */
+            edge: string | null;
+            /** Origin */
+            origin: string | null;
+            /** Cache */
+            cache: string | null;
+            /**
+             * Seen At
+             * Format: date-time
+             */
+            seen_at: string;
         };
         /** CountOut */
         CountOut: {
@@ -871,6 +1001,37 @@ export interface components {
          * @enum {string}
          */
         JobStatus: "queued" | "running" | "succeeded" | "failed" | "cancelled";
+        /**
+         * LatencyOut
+         * @description How long Genius took to answer, over the latest `MONITOR_WINDOW` requests that got an answer.
+         */
+        LatencyOut: {
+            /** Samples */
+            samples: number;
+            /** Last Ms */
+            last_ms: number;
+            /** Median Ms */
+            median_ms: number;
+            /** P95 Ms */
+            p95_ms: number;
+            /** Worst Ms */
+            worst_ms: number;
+            /** Recent Ms */
+            recent_ms: number[];
+        };
+        /** LyricsOut */
+        LyricsOut: {
+            /** Stanzas */
+            stanzas: components["schemas"]["StanzaOut"][];
+        };
+        /** MonitorOut */
+        MonitorOut: {
+            connection: components["schemas"]["ConnectionOut"] | null;
+            latency: components["schemas"]["LatencyOut"] | null;
+            answers: components["schemas"]["AnswersOut"];
+            /** Min Interval S */
+            min_interval_s: number;
+        };
         /** Page[ArtistAlbum] */
         Page_ArtistAlbum_: {
             /** Items */
@@ -968,6 +1129,18 @@ export interface components {
             albums: components["schemas"]["ArtistAlbum"][];
         };
         /**
+         * RelatedSongs
+         * @description `inverse` false: this song *is* the type of the others ("remix of"); true: the others are the
+         *     type of this one ("remixes").
+         */
+        RelatedSongs: {
+            type: components["schemas"]["SongRelationType"];
+            /** Inverse */
+            inverse: boolean;
+            /** Songs */
+            songs: components["schemas"]["SongCard"][];
+        };
+        /**
          * RevisionAction
          * @enum {string}
          */
@@ -978,6 +1151,154 @@ export interface components {
             role: string;
             /** Artists */
             artists: number;
+        };
+        /** SongAudioOut */
+        SongAudioOut: {
+            /** Provider */
+            provider: string;
+            /** Url */
+            url: string;
+        };
+        /**
+         * SongCard
+         * @description A song in a list of related songs.
+         */
+        SongCard: {
+            /** Id */
+            id: number;
+            /** Genius Id */
+            genius_id: number | null;
+            /** Base Name */
+            base_name: string;
+            /** Variant */
+            variant: string | null;
+            /** Cover Thumbnail Url */
+            cover_thumbnail_url: string | null;
+            /** Genius Url */
+            genius_url: string | null;
+            import_state: components["schemas"]["ImportState"];
+            /** Artists */
+            artists: string[];
+        };
+        /** SongCreditGroup */
+        SongCreditGroup: {
+            /** Role */
+            role: string;
+            /** Artists */
+            artists: components["schemas"]["ArtistRef"][];
+        };
+        /** SongDetail */
+        SongDetail: {
+            /** Id */
+            id: number;
+            /** Genius Id */
+            genius_id: number | null;
+            /** Name */
+            name: string;
+            /** Base Name */
+            base_name: string;
+            /** Variant */
+            variant: string | null;
+            /** Disambiguator */
+            disambiguator: string | null;
+            import_state: components["schemas"]["ImportState"];
+            /** Language */
+            language: string | null;
+            /** Release Date */
+            release_date: string | null;
+            release_date_precision: components["schemas"]["DatePrecision"] | null;
+            /** Description */
+            description: string | null;
+            description_dom: components["schemas"]["DomNode"] | null;
+            /** Description Refs */
+            description_refs: components["schemas"]["DomRef"][];
+            /** Recording Location */
+            recording_location: string | null;
+            /** Explicit */
+            explicit: boolean | null;
+            /** Instrumental */
+            instrumental: boolean | null;
+            /** Lyrics State */
+            lyrics_state: string | null;
+            /** Genius Url */
+            genius_url: string | null;
+            /** Cover Url */
+            cover_url: string | null;
+            /** Cover Primary Color */
+            cover_primary_color: string | null;
+            /** Cover Secondary Color */
+            cover_secondary_color: string | null;
+            /** View Count */
+            view_count: number | null;
+            /** Genre */
+            genre: string | null;
+            /** Tags */
+            tags: string[];
+            /** Artists */
+            artists: components["schemas"]["ArtistRef"][];
+            /** Featured */
+            featured: components["schemas"]["ArtistRef"][];
+            /** Credits */
+            credits: components["schemas"]["SongCreditGroup"][];
+            /** Albums */
+            albums: components["schemas"]["SongPlacement"][];
+            /** Related */
+            related: components["schemas"]["RelatedSongs"][];
+            /** Videos */
+            videos: components["schemas"]["SongVideoOut"][];
+            /** Audios */
+            audios: components["schemas"]["SongAudioOut"][];
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+            /**
+             * Updated At
+             * Format: date-time
+             */
+            updated_at: string;
+            /** Imports */
+            imports: components["schemas"]["ImportRef"][];
+            /** History */
+            history: components["schemas"]["ChangeOut"][];
+        };
+        /**
+         * SongPlacement
+         * @description The song on one album.
+         */
+        SongPlacement: {
+            album: components["schemas"]["ArtistAlbum"];
+            /** Disc Number */
+            disc_number: number | null;
+            /** Position */
+            position: number | null;
+            /** Is Primary */
+            is_primary: boolean | null;
+        };
+        /**
+         * SongRelationType
+         * @description One stored direction only; the inverse (sampled_in, remixed_by, ...) is derived.
+         * @enum {string}
+         */
+        SongRelationType: "samples" | "interpolates" | "cover_of" | "remix_of" | "live_version_of" | "translation_of";
+        /** SongVideoOut */
+        SongVideoOut: {
+            /** Url */
+            url: string;
+            /** Start Seconds */
+            start_seconds: number | null;
+            /** Explicit */
+            explicit: boolean;
+            /** Official */
+            official: boolean;
+        };
+        /** StanzaOut */
+        StanzaOut: {
+            /** Title */
+            title: string | null;
+            /** Lines */
+            lines: string[];
         };
         /** TaskOut */
         TaskOut: {
@@ -1485,6 +1806,26 @@ export interface operations {
             };
         };
     };
+    get_monitor: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MonitorOut"];
+                };
+            };
+        };
+    };
     get_import: {
         parameters: {
             query?: never;
@@ -1569,6 +1910,101 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["ImportJobOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_song: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                song_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SongDetail"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_song_raw: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                song_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        [key: string]: unknown;
+                    } | null;
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_song_lyrics: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                song_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["LyricsOut"] | null;
                 };
             };
             /** @description Validation Error */

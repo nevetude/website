@@ -5,7 +5,8 @@
 	import CoverViewer from '#lib/album/CoverViewer.svelte';
 	import ReleaseControls from '#lib/album/ReleaseControls.svelte';
 
-	type Props = { album: AlbumDetail; covers: string[] };
+	// Only the colour of the cover is read: a song has one too.
+	type Props = { album: Pick<AlbumDetail, 'cover_secondary_color'>; covers: string[] };
 
 	let { album, covers }: Props = $props();
 
@@ -14,7 +15,7 @@
 	const tint = $derived(coverTint(album));
 </script>
 
-<!-- The coloured part: 400px wide and 380px high (the last 3rem of its height are under the tracklist, which the
+<!-- The coloured part: 380px wide and 380px high (the last 3rem of its height are under the tracklist, which the
      page lays over its lower edge). In its visible part, from the top down: a space, the cover, a space, the row
      of the panel of buttons, a space down to the tracklist; the numbers are pixels at this height (57.5, 25 and
      16.5 of the 99 left by the cover and the row). The panel is 20px lower than the equal spaces would put it, the cover 20px lower than it was. The

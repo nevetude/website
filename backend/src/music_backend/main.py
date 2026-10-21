@@ -5,7 +5,7 @@ from fastapi import FastAPI
 from sqlalchemy import text
 from sqlalchemy.ext.asyncio import async_sessionmaker, create_async_engine
 
-from music_backend.api import album_page, artist_page, artists, genius, imports
+from music_backend.api import album_page, artist_page, artists, genius, imports, song_page
 from music_backend.api.deps import SessionDep
 from music_backend.config import Settings, get_settings
 from music_backend.imports.client import GeniusClient
@@ -49,6 +49,7 @@ def create_app(
     app.include_router(artist_page.router)  # after the list: `/roles` must not be read as an id
     app.include_router(genius.router)
     app.include_router(imports.router)
+    app.include_router(song_page.router)
 
     @app.get("/api/v1/health")
     async def health(session: SessionDep) -> dict[str, str]:

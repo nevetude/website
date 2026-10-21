@@ -2,6 +2,7 @@ import asyncio
 import time
 from collections.abc import Awaitable, Callable
 from dataclasses import dataclass
+from datetime import UTC, datetime
 from typing import TYPE_CHECKING, Any
 
 import httpx
@@ -28,6 +29,24 @@ class RequestLog:
 
 
 type Recorder = Callable[[RequestLog], Awaitable[None]]
+
+
+@dataclass(slots=True, frozen=True)
+class Connection:
+    """What the last answer of Genius says about the server we talk to, for the monitor of the import."""
+
+    host: str
+    ip: str | None  # the address we are connected to; none when the transport is not a real socket
+    http_version: str
+    tls_version: str | None
+    cipher: str | None
+    server: str | None  # the `Server` header: Genius sits behind Cloudflare
+    edge: (
+        str | None
+    )  # `cf-ray` ends with the code of the Cloudflare data centre that answered ("...-TLL")
+    origin: str | None  # the last hop of `Via`: the app behind Cloudflare ("heroku-router")
+    cache: str | None
+    seen_at: datetime
 
 
 class GeniusError(Exception):
@@ -62,6 +81,7 @@ class GeniusClient:
         self._retries = retries
         self._lock = asyncio.Lock()
         self._last_request_at = 0.0
+        self.connection: Connection | None = None  # of the latest answer
 
     async def get(
         self, path: str, params: dict[str, Any] | None = None, record: Recorder | None = None
@@ -98,6 +118,7 @@ class GeniusClient:
                     await record(log)
                 raise GeniusError(f"Genius request failed: {error!r}", retryable=True) from error
 
+        self.connection = self._connection(response)
         limited = response.status_code == 429
         log = RequestLog(
             url,
@@ -122,6 +143,26 @@ class GeniusClient:
                 retryable=response.status_code in RETRY_STATUSES,
             )
         return response.json()["response"]  # type: ignore[no-any-return]
+
+    @staticmethod
+    def _connection(response: httpx.Response) -> Connection:
+        stream = response.extensions.get("network_stream")  # a mocked transport has none
+        address = stream.get_extra_info("server_addr") if stream else None
+        tls = stream.get_extra_info("ssl_object") if stream else None
+        ray = response.headers.get("cf-ray")
+        via = response.headers.get("via")
+        return Connection(
+            host=response.url.host,
+            ip=address[0] if address else None,
+            http_version=response.http_version,
+            tls_version=tls.version() if tls else None,
+            cipher=tls.cipher()[0] if tls else None,
+            server=response.headers.get("server"),
+            edge=ray.rsplit("-", 1)[1] if ray else None,
+            origin=via.split()[-1] if via else None,
+            cache=response.headers.get("cf-cache-status"),
+            seen_at=datetime.now(UTC),
+        )
 
     @staticmethod
     def _limit_note(response: httpx.Response) -> str:

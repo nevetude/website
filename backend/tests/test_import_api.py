@@ -106,6 +106,75 @@ async def test_artist_import_job_end_to_end(
     assert newer["items"] == []
 
 
+async def test_monitor_is_empty_before_the_first_request(api: AsyncClient) -> None:
+    monitor = (await api.get("/api/v1/imports/monitor")).json()
+
+    assert monitor["connection"] is None
+    assert monitor["latency"] is None
+    assert monitor["answers"]["requests"] == 0
+
+
+async def test_monitor_reports_the_server_and_how_it_answered(
+    api: AsyncClient, respx_mock: respx.MockRouter
+) -> None:
+    respx_mock.get(f"{GENIUS}/artists/21").respond(
+        json={"response": {"artist": artist_payload(21)}},
+        headers={
+            "server": "cloudflare",
+            "cf-ray": "a4db2ec76f8fabf0-TLL",
+            "via": "2.0 heroku-router",
+        },
+    )
+    respx_mock.get(f"{GENIUS}/artists/22").respond(status_code=404)
+
+    await start(api, "artist", 21)
+    await start(api, "artist", 22)
+    monitor = (await api.get("/api/v1/imports/monitor")).json()
+
+    connection = monitor["connection"]
+    assert (connection["host"], connection["ip"], connection["http_version"]) == (
+        "genius.com",
+        None,  # respx has no socket to ask
+        "HTTP/1.1",
+    )
+    assert connection["edge"] is None  # the latest answer was the bare 404
+    assert monitor["answers"] | {"bytes": 0} == {
+        "requests": 2,
+        "ok": 1,
+        "client_errors": 1,
+        "rate_limited": 0,
+        "server_errors": 0,
+        "no_answer": 0,
+        "retries": 0,
+        "bytes": 0,
+    }
+    assert monitor["latency"]["samples"] == 2
+    assert len(monitor["latency"]["recent_ms"]) == 2
+    assert monitor["min_interval_s"] == 0.0  # the test app does not wait between requests
+
+
+async def test_monitor_reads_the_cloudflare_edge_and_the_origin(
+    api: AsyncClient, respx_mock: respx.MockRouter
+) -> None:
+    respx_mock.get(f"{GENIUS}/artists/21").respond(
+        json={"response": {"artist": artist_payload(21)}},
+        headers={
+            "server": "cloudflare",
+            "cf-ray": "a4db2ec76f8fabf0-TLL",
+            "via": "2.0 heroku-router",
+        },
+    )
+
+    await start(api, "artist", 21)
+    connection = (await api.get("/api/v1/imports/monitor")).json()["connection"]
+
+    assert (connection["server"], connection["edge"], connection["origin"]) == (
+        "cloudflare",
+        "TLL",
+        "heroku-router",
+    )
+
+
 async def test_discography_job_carries_the_albums_limit(
     api: AsyncClient, respx_mock: respx.MockRouter, sessionmaker: SessionMaker
 ) -> None:

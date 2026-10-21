@@ -37,13 +37,8 @@
 
 <SideZones />
 
-<!-- The pages with breadcrumbs (album, artist) start higher, and all of them at the same place: the breadcrumbs stand
-     8px under the header, so they do not jump when one goes from page to page. -->
-<main
-	class="mx-auto max-w-[calc(1240px+3rem)] px-6 pb-8 {page.route.id === '/albums/[id]' ||
-	page.route.id === '/artists/[id]'
-		? 'pt-[8px]'
-		: 'pt-8'}"
->
+<!-- Every page starts 2rem under the header: its first block (the cover, the form), or the main element if there
+     is no cover. The breadcrumbs stand in that room (`Breadcrumbs`). -->
+<main class="relative mx-auto max-w-[calc(1240px+3rem)] px-6 pt-8 pb-8">
 	{@render children()}
 </main>

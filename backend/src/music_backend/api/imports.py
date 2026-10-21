@@ -1,3 +1,4 @@
+import statistics
 from collections.abc import Sequence
 from datetime import datetime
 
@@ -15,6 +16,8 @@ from music_backend.models import Album, Artist, ImportJob, ImportRequest, Song
 router = APIRouter(prefix="/api/v1/imports", tags=["imports"])
 
 RECENT_REQUESTS = 10  # the short log shown on the job card
+MONITOR_WINDOW = 100  # the monitor reads its latency and answers from this many latest requests
+CHART_POINTS = 40
 
 
 class ImportRequestOut(BaseModel):
@@ -83,6 +86,54 @@ class ImportJobOut(BaseModel):
     progress: ProgressOut | None = None
     requests_total: int = 0
     recent_requests: list[ImportRequestOut] = []
+
+
+class ConnectionOut(BaseModel):
+    """The server behind the latest answer of Genius; null until the first request after a start."""
+
+    model_config = ConfigDict(from_attributes=True)
+
+    host: str
+    ip: str | None
+    http_version: str
+    tls_version: str | None
+    cipher: str | None
+    server: str | None
+    edge: str | None
+    origin: str | None
+    cache: str | None
+    seen_at: datetime
+
+
+class LatencyOut(BaseModel):
+    """How long Genius took to answer, over the latest `MONITOR_WINDOW` requests that got an answer."""
+
+    samples: int
+    last_ms: int
+    median_ms: int
+    p95_ms: int
+    worst_ms: int
+    recent_ms: list[int]  # the latest answers, oldest first, for a small chart
+
+
+class AnswersOut(BaseModel):
+    """What the latest `MONITOR_WINDOW` requests got back."""
+
+    requests: int
+    ok: int
+    client_errors: int  # 4xx except 429
+    rate_limited: int  # 429
+    server_errors: int
+    no_answer: int  # the request never got a response
+    retries: int
+    bytes: int
+
+
+class MonitorOut(BaseModel):
+    connection: ConnectionOut | None
+    latency: LatencyOut | None
+    answers: AnswersOut
+    min_interval_s: float
 
 
 class ImportCreate(BaseModel):
@@ -161,6 +212,54 @@ async def list_imports(
     if active:
         query = query.where(ImportJob.status.in_([JobStatus.QUEUED, JobStatus.RUNNING]))
     return [await _out(request, session, job) for job in await session.scalars(query)]
+
+
+@router.get("/monitor")
+async def get_monitor(request: Request, session: SessionDep, _: EditorDep) -> MonitorOut:
+    """The server we import from and how it answers. Declared before `/{job_id}` so that the path is not read as an id."""
+    rows = (
+        await session.execute(
+            select(
+                ImportRequest.elapsed_ms,
+                ImportRequest.status_code,
+                ImportRequest.size_bytes,
+                ImportRequest.attempt,
+            )
+            .order_by(ImportRequest.id.desc())
+            .limit(MONITOR_WINDOW)
+        )
+    ).all()  # newest first
+    answered = [row.elapsed_ms for row in rows if row.status_code is not None]
+    codes = [row.status_code for row in rows if row.status_code is not None]
+    latency = (
+        LatencyOut(
+            samples=len(answered),
+            last_ms=answered[0],
+            median_ms=round(statistics.median(answered)),
+            p95_ms=sorted(answered)[int(0.95 * (len(answered) - 1))],
+            worst_ms=max(answered),
+            recent_ms=answered[:CHART_POINTS][::-1],
+        )
+        if answered
+        else None
+    )
+    connection = request.app.state.genius.connection
+    settings = request.app.state.settings
+    return MonitorOut(
+        connection=ConnectionOut.model_validate(connection) if connection else None,
+        latency=latency,
+        answers=AnswersOut(
+            requests=len(rows),
+            ok=sum(1 for code in codes if code < 400),
+            client_errors=sum(1 for code in codes if 400 <= code < 500 and code != 429),
+            rate_limited=sum(1 for code in codes if code == 429),
+            server_errors=sum(1 for code in codes if code >= 500),
+            no_answer=sum(1 for row in rows if row.status_code is None),
+            retries=sum(1 for row in rows if row.attempt > 1),
+            bytes=sum(row.size_bytes or 0 for row in rows),
+        ),
+        min_interval_s=settings.genius_min_interval_s,
+    )
 
 
 @router.get("/{job_id}")

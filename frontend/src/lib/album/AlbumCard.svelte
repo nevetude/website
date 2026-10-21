@@ -5,9 +5,16 @@
 	import { formatFullDate, formatRelease } from '#lib/format.js';
 	import CommaList from '#lib/ui/CommaList.svelte';
 
-	type Props = { album: ArtistAlbum; layout?: 'grid' | 'list'; height: number; cover: number };
+	// `note` is a third line under the artists of a grid card (how the album is related to the one on the page).
+	type Props = {
+		album: ArtistAlbum;
+		layout?: 'grid' | 'list';
+		height: number;
+		cover: number;
+		note?: string;
+	};
 
-	let { album, layout = 'grid', height, cover }: Props = $props();
+	let { album, layout = 'grid', height, cover, note }: Props = $props();
 
 	const year = $derived(formatRelease(album.release_date, 'year'));
 	// Credited only (a remix, a production): nobody is listed on the album, so show the artist's roles.
@@ -70,6 +77,9 @@
 				<span class="truncate"><CommaList items={byline} /></span>
 				{#if year}<span class="tabular shrink-0">{year}</span>{/if}
 			</div>
+			{#if note}<div class="truncate text-left text-xs leading-4 text-surface-content/50">
+					{note}
+				</div>{/if}
 		{:else}
 			<!-- A rectangle that continues the cover, on a darker ground that lights up on hover. The card is only as tall as
 			     the cover: a long title or many artists are cut short and never make it taller. -->

@@ -22,11 +22,13 @@ from music_backend.api.queries import (
     get_or_404,
     imports_and_history,
     ordering,
+    producers_of,
     raw_of,
     song_roles,
 )
 from music_backend.api.schemas import (
     ArtistAlbum,
+    ArtistName,
     ArtistRef,
     ChangeOut,
     DomNode,
@@ -148,6 +150,7 @@ class ArtistSong(BaseModel):
     album: str | None  # the primary album of the song
     import_state: ImportState
     roles: list[str]
+    producers: list[ArtistName]  # credited as "Producer"
 
 
 class ArtistVideo(BaseModel):
@@ -301,8 +304,12 @@ async def list_artist_songs(
         .offset(paging.offset)
     )
     matching = select(role.c.song_id).group_by(role.c.song_id).having(*having)
+    songs = rows.all()
+    producers = await producers_of(session, [row.id for row in songs])
     return Page.of(
-        [ArtistSong(**row._mapping) for row in rows], await count(session, matching), paging
+        [ArtistSong(**row._mapping, producers=producers.get(row.id, [])) for row in songs],
+        await count(session, matching),
+        paging,
     )
 
 

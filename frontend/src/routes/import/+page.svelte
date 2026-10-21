@@ -33,25 +33,30 @@
 
 <Breadcrumbs trail={[{ label: 'Import' }]} />
 
-<div class="grid items-start gap-4 lg:grid-cols-[1fr_21rem]">
-	<NewImport onstart={imports.start.bind(imports)} />
-	<Monitor job={running} {now} />
+<!-- The monitor is a column of its own, beside the form and the jobs, and stays in view while the jobs scroll. -->
+<div class="grid items-start gap-6 lg:grid-cols-[minmax(0,1fr)_22rem]">
+	<div class="space-y-6 lg:col-start-1 lg:row-start-1">
+		<NewImport onstart={imports.start.bind(imports)} />
+
+		<section class="space-y-4">
+			{#if imports.offline}
+				<p class="text-xs text-danger">The backend does not answer</p>
+			{/if}
+
+			{#each imports.jobs as job (job.id)}
+				<JobCard {job} oncancel={imports.cancel.bind(imports)} onlog={(j) => (logJob = j)} />
+			{:else}
+				<div
+					class="rounded-xl border border-dashed border-white/10 px-6 py-12 text-center text-sm text-surface-content/40"
+				>
+					No imports yet
+				</div>
+			{/each}
+		</section>
+	</div>
+	<div class="lg:sticky lg:top-4 lg:col-start-2 lg:row-start-1">
+		<Monitor job={running} {now} monitor={imports.monitor} />
+	</div>
 </div>
-
-<section class="mt-8 space-y-4">
-	{#if imports.offline}
-		<p class="text-xs text-danger">The backend does not answer</p>
-	{/if}
-
-	{#each imports.jobs as job (job.id)}
-		<JobCard {job} oncancel={imports.cancel.bind(imports)} onlog={(j) => (logJob = j)} />
-	{:else}
-		<div
-			class="rounded-xl border border-dashed border-white/10 px-6 py-12 text-center text-sm text-surface-content/40"
-		>
-			No imports yet
-		</div>
-	{/each}
-</section>
 
 <RequestsDialog job={logJob} active={logActive} onclose={() => (logJob = null)} />

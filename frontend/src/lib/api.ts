@@ -7,6 +7,7 @@ export const api = createClient<paths>();
 export type Job = components['schemas']['ImportJobOut'];
 export type Count = components['schemas']['CountOut'];
 export type RequestRow = components['schemas']['ImportRequestOut'];
+export type Monitor = components['schemas']['MonitorOut'];
 export type ImportKind = components['schemas']['ImportKind'];
 export type ArtistHit = components['schemas']['ArtistSearchHit'];
 
@@ -25,3 +26,8 @@ export type AlbumVideo = components['schemas']['AlbumVideoOut'];
 export type CreditGroup = components['schemas']['CreditGroup'];
 export type RelatedAlbums = components['schemas']['RelatedAlbums'];
 export type ArtistVideo = components['schemas']['ArtistVideo'];
+
+export type SongDetail = components['schemas']['SongDetail'];
+export type RelatedSongs = components['schemas']['RelatedSongs'];
+export type SongCard = components['schemas']['SongCard'];
+export type Lyrics = components['schemas']['LyricsOut'];

@@ -1,12 +1,17 @@
 <script lang="ts">
 	import type { Snippet } from 'svelte';
 
-	type Props = { title: string; ontoggle?: (event: Event) => void; children: Snippet };
+	type Props = {
+		title: string;
+		open?: boolean;
+		ontoggle?: (event: Event) => void;
+		children: Snippet;
+	};
 
-	let { title, ontoggle, children }: Props = $props();
+	let { title, open = false, ontoggle, children }: Props = $props();
 </script>
 
-<details {ontoggle}>
+<details {open} {ontoggle}>
 	<summary
 		class="cursor-pointer px-5 py-3 text-sm text-surface-content/70 select-none hover:text-surface-content"
 	>

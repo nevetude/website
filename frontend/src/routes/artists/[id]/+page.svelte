@@ -36,7 +36,7 @@
 		     description with the links and the members beside it. The header is 380px high at least; the popular tracks lie over the lower
 		     edge of the panel of the portrait. On a narrow screen the header comes first. -->
 		<div
-			class="grid grid-cols-[minmax(0,1fr)] items-start gap-x-8 gap-y-6 min-[1000px]:grid-cols-[400px_minmax(0,1fr)] min-[1000px]:grid-rows-[minmax(380px,auto)_auto] min-[1000px]:gap-y-0"
+			class="grid grid-cols-[minmax(0,1fr)] items-start gap-x-8 gap-y-6 min-[1000px]:grid-cols-[380px_minmax(0,1fr)] min-[1000px]:grid-rows-[minmax(380px,auto)_auto] min-[1000px]:gap-y-0"
 		>
 			<div class="order-2 min-[1000px]:order-none min-[1000px]:-mb-12 min-[1000px]:self-stretch">
 				<ArtistPortrait
@@ -46,9 +46,17 @@
 				/>
 			</div>
 			<div class="order-1 min-[1000px]:order-none min-[1000px]:self-stretch">
-				<div class="min-w-0 space-y-3 pb-6">
-					<ArtistInfo {artist} />
-					<ArtistGenres genres={artist.genres} />
+				<!-- The same panel as on the page of an album, as wide as there: the right column stays for the genres. It is as
+				     high as the row, so its lower edge is where the popular tracks begin. -->
+				<div
+					class="grid grid-cols-[minmax(0,1fr)] gap-y-3 min-[1000px]:h-full min-[1200px]:grid-cols-[minmax(0,1fr)_400px] min-[1200px]:gap-x-8"
+				>
+					<div class="min-w-0 rounded-xl bg-surface-200 px-4 pt-4">
+						<ArtistInfo {artist} />
+					</div>
+					<div class="min-w-0 min-[1200px]:self-start">
+						<ArtistGenres genres={artist.genres} />
+					</div>
 				</div>
 			</div>
 			<div class="relative z-10 order-3 min-[1000px]:order-none">

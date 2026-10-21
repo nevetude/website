@@ -4,7 +4,7 @@ Read it at the start of a session; shrink it when its open items are closed. Set
 
 ## 1. State
 - Backend: 121 tests, `ruff` and `mypy --strict` clean. Frontend: `check`, `lint`, 35 unit tests, 2 e2e, `build` pass.
-- Working: models and migrations, the Genius import (artist, album, song, discography) with its API and a page at `/import`, the artist search, a test home page of artists, the artist page and the album page (with its clips: `GET /albums/{id}/videos`, one YouTube player, a playlist in the order of the tracklist).
+- Working: models and migrations, the Genius import (artist, album, song, discography) with its API and a page at `/import`, the artist search, a test home page of artists, the artist page, the album page (with its clips: `GET /albums/{id}/videos`, one YouTube player, a playlist in the order of the tracklist) and the song page (`/songs/[id]`, laid out like the album page, its lyrics read from local files in `lyrics/`, see `CLAUDE.md`).
 - Not built: login and sessions (dev auto-login as `admin`), Genius OAuth for closed songs (403), `refresh`, the progress widget on every page, edit mode, the player and local mp3.
 - Postgres in Docker (`compose.yaml`, user/password/database `music`); the container stops when WSL restarts: `docker compose up -d db`. `make reset` wipes the local database and rebuilds it from the migrations. One migration (`initial_schema`): while there is no data worth keeping, the schema is changed by regenerating it (`make reset`); once data matters, a migration must keep it (ADR 0005).
 

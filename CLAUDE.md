@@ -36,7 +36,7 @@ docs/        architecture notes, decisions/ (ADRs)
 compose.yaml local dev services
 ```
 
-The domain model is approved (`docs/domain-model.md`) and implemented in `backend/src/music_backend/models/` with the initial Alembic migration. The import (`backend/src/music_backend/imports/`: one handler per entity, a flat task queue, one transaction per entity; see `docs/decisions/0004-import-ui-and-jobs.md`) and its API are implemented. Auth, the other catalog endpoints and the frontend app are **not designed yet**: discuss with the user before building them. The one exception is a **test** home page of artists (`api/artists.py`, `src/routes/+page.svelte`, `src/lib/artists*`), kept isolated because it may be dropped. The artist page (`api/artist_page.py`, `src/routes/artists/[id]`, `src/lib/artist/`) and the album page (`api/album_page.py`, `src/routes/albums/[id]`, `src/lib/album/`) were designed with the user; the album page follows the look of the discography block of the artist page.
+The domain model is approved (`docs/domain-model.md`) and implemented in `backend/src/music_backend/models/` with the initial Alembic migration. The import (`backend/src/music_backend/imports/`: one handler per entity, a flat task queue, one transaction per entity; see `docs/decisions/0004-import-ui-and-jobs.md`) and its API are implemented. Auth, the other catalog endpoints and the frontend app are **not designed yet**: discuss with the user before building them. The one exception is a **test** home page of artists (`api/artists.py`, `src/routes/+page.svelte`, `src/lib/artists*`), kept isolated because it may be dropped. The artist page (`api/artist_page.py`, `src/routes/artists/[id]`, `src/lib/artist/`) and the album page (`api/album_page.py`, `src/routes/albums/[id]`, `src/lib/album/`) were designed with the user; the album page follows the look of the discography block of the artist page. The song page (`api/song_page.py`, `src/routes/songs/[id]`, `src/lib/song/`) was chosen from two prototypes: it is laid out like the album page, with the card of the lyrics (the title and the artists are its top) beside the cover. Lyrics are not in any API and are never scraped: they are text files put by hand in `lyrics/<genius id>.txt` (`lyrics/demo.txt` stands in for songs without a file; the folder is not in git), read by `lyrics.py`.
 
 ## Code principles (user's explicit preferences)
 
@@ -55,8 +55,8 @@ Backend (`cd backend`, uv project, `src/music_backend`, tests in `tests/`):
 - `uv run ruff format .` / `uv run ruff check --fix .`
 - `uv run mypy` (strict), `uv run pytest` (async mode auto, coverage on; needs `docker compose up -d db`, tests build their own `music_test` database through the real migrations)
 - `uv run fastapi dev` (API on :8000, entrypoint set in pyproject), health: `/api/v1/health`
-- `uv run python scripts/reset_db.py` (`--yes` to skip the question): wipes the local database and rebuilds it from the migrations, a clean start for an import; stop the backend first; refuses a non-local host; starts the compose database if it is down
-- `make reset` (repo root): the same script with `--yes`, the quick way to a clean database
+- `make dev` (repo root): the whole project in one terminal (database, migrations, API on :8000, site on :8080); `make backend` / `make frontend` run one of them
+- `make reset` (repo root): deletes the compose database volume and rebuilds the tables from the migrations, a clean start for an import; stop the backend first
 - `uv run alembic revision --autogenerate -m "..."`, `uv run alembic upgrade head`, `uv run alembic check`
 - Column order is fixed by `sort_order` bands in `models/base.py` (see `docs/domain-model.md`); no JSON columns for modeled data (exceptions are listed there)
 - Enum columns: use `enum_column()` (text, no CHECK, room for new values; adding a value needs no migration)

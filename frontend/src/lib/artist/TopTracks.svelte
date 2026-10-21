@@ -1,8 +1,9 @@
 <script lang="ts">
+	import { resolve } from '$app/paths';
 	import { api, type ArtistSong } from '#lib/api.js';
 	import { formatCount } from '#lib/format.js';
 	import { PagedList } from '#lib/paged.svelte.js';
-	import SongTitle from '#lib/ui/SongTitle.svelte';
+	import CommaList from '#lib/ui/CommaList.svelte';
 	import Thumb from '#lib/ui/Thumb.svelte';
 
 	// `Artist` keeps credits (producer, writer) of other people's songs out of the "top"; an artist
@@ -23,39 +24,56 @@
 	$effect(() => {
 		void list.reload();
 	});
+
+	const ROW =
+		'grid h-full grid-cols-[2rem_minmax(0,1fr)] items-stretch gap-2 rounded-lg px-3.5 py-1.5 hover:bg-black/20';
 </script>
 
-<!-- The popular tracks in the container of the tracklist of an album, without its bite, its gear and its top row. The most
-     viewed track has the big dot. -->
-{#if list.items.length}
-	<section class="rounded-xl bg-surface-200 p-2">
-		<ol>
-			{#each list.items as song, index (song.id)}
-				<li
-					class="grid grid-cols-[1.25rem_2rem_minmax(0,1fr)_auto] items-center gap-2 rounded-lg px-1.5 py-1.5 hover:bg-black/20"
-				>
-					<span class="block text-center text-sm leading-snug text-surface-content/60">
-						{#if index === 0}
-							<span
-								title="The most viewed track"
-								class="relative -top-[0.6px] inline-block size-[6px] rounded-full bg-current align-baseline"
-							></span>
-						{:else}
-							<span class="tabular text-[10px]">{index + 1}</span>
-						{/if}
-					</span>
-					<Thumb src={song.cover_thumbnail_url} name="" class="size-8 rounded-md" />
-					<div class="min-w-0">
-						<SongTitle {song} class="block leading-snug" />
-						{#if song.album}
-							<div class="truncate text-xs leading-snug text-surface-content/65">{song.album}</div>
-						{/if}
+{#snippet row(song: ArtistSong)}
+	{@const producers = song.producers.map((producer) => producer.base_name)}
+	<span class="flex items-center"
+		><Thumb src={song.cover_thumbnail_url} name="" class="size-8 rounded-md" /></span
+	>
+	<div class="flex min-w-0 items-center">
+		<div class="flex w-full min-w-0 items-baseline gap-1.5 pr-0.5">
+			<div class="flex min-w-0 flex-1 flex-col">
+				<span class="truncate text-sm leading-snug text-surface-content">
+					{song.base_name}{#if song.variant}<span class="ml-1.5 text-surface-content/65"
+							>{song.variant}</span
+						>{/if}
+				</span>
+				{#if song.album}
+					<div class="mt-0.5 truncate text-xs leading-snug text-surface-content/65">
+						{song.album}
 					</div>
-					<span class="tabular min-w-[2.5rem] text-right text-[11px] text-surface-content">
-						{song.view_count ? formatCount(song.view_count) : ''}
-					</span>
+				{/if}
+			</div>
+			<span
+				class="-mr-[5px] max-w-[6.25rem] truncate text-right text-[11px] text-surface-content/65"
+				title={producers.join(', ')}
+			>
+				<CommaList items={producers} wrap={false} />
+			</span>
+			<span class="tabular -ml-0.5 min-w-[2rem] text-right text-[10px] text-surface-content/65">
+				{song.view_count ? formatCount(song.view_count) : ''}
+			</span>
+		</div>
+	</div>
+{/snippet}
+
+<!-- The popular tracks in the container of the tracklist of an album, without its bite, its gear and its top row, and
+     with the rows of that tracklist (see `Tracklist`: the same classes). The card has no padding of its own, like there: the
+     rows run to its edges and carry the room (`px-3.5`), so the cover stands where it stood. No numbers: the order is the order of views. -->
+{#if list.items.length}
+	<section class="rounded-xl bg-surface-200">
+		<ul class="py-2">
+			{#each list.items as song (song.id)}
+				<li>
+					<a href={resolve('/songs/[id]', { id: String(song.id) })} class={ROW}>
+						{@render row(song)}
+					</a>
 				</li>
 			{/each}
-		</ol>
+		</ul>
 	</section>
 {/if}

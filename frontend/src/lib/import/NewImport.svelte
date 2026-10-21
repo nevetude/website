@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { Button, SelectField, TextField } from 'svelte-ux';
+	import CheckIcon from '@lucide/svelte/icons/check';
 	import SearchIcon from '@lucide/svelte/icons/search';
 	import { api, type ArtistHit } from '#lib/api.js';
 	import { MODES, PREFIX, importBody, type Mode } from '#lib/imports.js';
@@ -57,8 +58,13 @@
 	const dbLabel = { stub: 'Stub', full: 'In library' } as const;
 </script>
 
-<section class="space-y-4 rounded-xl border border-white/8 bg-surface-200 p-5">
-	<h2 class="text-xs font-medium tracking-wider text-surface-content/50 uppercase">Import</h2>
+<section class="flex flex-col gap-5 rounded-xl border border-white/8 bg-surface-200 p-5">
+	<header>
+		<h2 class="text-base font-semibold text-surface-content">Import</h2>
+		<p class="mt-0.5 text-xs text-surface-content/50">
+			Pull an artist, an album or a song from Genius into the library.
+		</p>
+	</header>
 
 	{#if withSearch}
 		<div>
@@ -66,27 +72,39 @@
 				<div class="min-w-0 flex-1">
 					<TextField bind:value={query} label="Find an artist" placeholder="Artist name" dense />
 				</div>
-				<Button type="submit" icon={SearchIcon} loading={searching} variant="fill-light">
+				<Button
+					type="submit"
+					icon={SearchIcon}
+					loading={searching}
+					variant="fill-light"
+					class="h-10 px-4"
+				>
 					Search
 				</Button>
 			</form>
 			{#if searchError}<p class="mt-2 text-xs text-danger">{searchError}</p>{/if}
 			{#if hits}
 				<ul
-					class="mt-3 max-h-64 divide-y divide-white/6 overflow-auto rounded-lg bg-surface-100/50"
+					class="mt-3 max-h-64 divide-y divide-white/6 overflow-auto rounded-lg border border-white/8 bg-surface-300/60"
 				>
 					{#each hits as hit (hit.genius_id)}
+						{@const chosen = idText === String(hit.genius_id)}
 						<li>
 							<button
 								type="button"
-								class="flex w-full items-center gap-3 px-3 py-2 text-left hover:bg-white/5 {idText ===
-									String(hit.genius_id) && 'bg-white/8'}"
+								aria-pressed={chosen}
+								class="flex w-full items-center gap-3 px-3 py-2 text-left hover:bg-white/5 {chosen
+									? 'bg-white/8'
+									: ''}"
 								onclick={() => (idText = String(hit.genius_id))}
 							>
 								<Thumb src={hit.image_url} name="" class="size-8 rounded-md" />
 								<span class="min-w-0 flex-1 truncate text-sm text-surface-content">{hit.name}</span>
 								<span class="tabular text-xs text-surface-content/40">{hit.genius_id}</span>
 								{#if hit.db_state}<Chip tone="good">{dbLabel[hit.db_state]}</Chip>{/if}
+								<span class="flex size-4 shrink-0 items-center justify-center text-surface-content">
+									{#if chosen}<CheckIcon class="size-4" aria-hidden="true" />{/if}
+								</span>
 							</button>
 						</li>
 					{:else}
@@ -97,21 +115,31 @@
 		</div>
 	{/if}
 
-	<form class="flex flex-wrap items-end gap-3" onsubmit={start}>
+	<form class="flex flex-wrap items-end gap-3 border-t border-white/8 pt-5" onsubmit={start}>
 		<div class="w-64">
 			<SelectField label="Mode" options={MODES} bind:value={mode} clearable={false} dense />
 		</div>
 		{#if mode === 'discography'}
-			<div class="w-40"><TextField bind:value={idText} label="Artist id" dense /></div>
-			<div class="w-44">
+			<div class="w-36"><TextField bind:value={idText} label="Artist id" dense /></div>
+			<div class="w-36">
 				<TextField bind:value={limitText} label="Albums limit" placeholder="all" dense />
 			</div>
 		{:else}
 			<div class="flex items-end gap-2">
-				<span class="pb-2 font-mono text-xs text-surface-content/50">{PREFIX[mode]}</span>
-				<div class="w-40"><TextField bind:value={idText} label="Id" dense /></div>
+				<span class="flex h-10 items-center font-mono text-xs text-surface-content/50"
+					>{PREFIX[mode]}</span
+				>
+				<div class="w-36"><TextField bind:value={idText} label="Id" dense /></div>
 			</div>
 		{/if}
-		<Button type="submit" loading={starting} disabled={!body} variant="fill">Import</Button>
+		<Button
+			type="submit"
+			loading={starting}
+			disabled={!body}
+			variant="fill"
+			class="ml-auto h-10 min-w-28"
+		>
+			Import
+		</Button>
 	</form>
 </section>

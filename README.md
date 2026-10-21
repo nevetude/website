@@ -87,7 +87,8 @@ Useful commands:
 
 | Command | What it does |
 |---|---|
-| `make reset` (repo root) | wipes the local database and rebuilds it from the migrations, without asking (stop the API first; the script refuses a non-local host) |
+| `make dev` (repo root) | the database, the migrations, the API on :8000 and the site on :8080 in one terminal |
+| `make reset` (repo root) | deletes the database volume and rebuilds the tables from the migrations, without asking (stop the API first) |
 | `cd backend && uv run alembic revision --autogenerate -m "..."` | a new migration |
 | `cd frontend && pnpm gen:api` | regenerates `src/lib/api/schema.d.ts` after an API change |
 
@@ -120,13 +121,13 @@ backend/        FastAPI app, importer, models, migrations, tests (uv project)
     bio.py      reads "real name / born / died" from the start of an artist description
     names.py    splits a title into name, variant and disambiguator
   migrations/   Alembic (one initial migration while there is no data worth keeping)
-  scripts/      reset_db.py, openapi.py (used by `pnpm gen:api`)
+  scripts/      openapi.py (used by `pnpm gen:api`)
 frontend/       SvelteKit app (pnpm project)
-  src/routes/   /, /import, /artists/[id], /albums/[id]
+  src/routes/   /, /import, /artists/[id], /albums/[id], /songs/[id]
   src/lib/      album/, artist/, artists/, import/, entity/, ui/, layout/, api/ (generated types)
 docs/           domain model, decisions (ADRs), Genius API notes, parked fields and UI, experiments
 compose.yaml    local PostgreSQL
-Makefile        `make reset`
+Makefile        `make dev`, `make reset`
 CLAUDE.md       the rules of the project for the AI assistant (also a good summary of the code principles)
 ```
 
@@ -345,7 +346,7 @@ measurement in `docs/rate-limit/` was done on purpose and in small amounts.
 ## Troubleshooting
 
 - **The database is not there after a restart of WSL.** The container stops with it: `docker compose up -d db`.
-- **`make reset` fails.** Stop the API first (it holds connections), and make sure the database container is up.
+- **`make reset` fails.** Stop the API first and check that `docker ps` works without `sudo`.
 - **`TypeError: Cannot read properties of undefined (reading 'call')` in the browser console during development.**
   Vite pre-bundled a new icon import and reloaded the page while two copies of Svelte were around; restart `pnpm dev`.
 - **The e2e test cannot start Chromium.** Install it with `pnpm exec playwright install chromium`; on a bare Linux

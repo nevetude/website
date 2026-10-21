@@ -8,7 +8,7 @@
 	let { src, name, verified }: Props = $props();
 </script>
 
-<!-- The same panel as the cover of an album (400px wide, 380px high and 3rem more under the popular tracks, which the
+<!-- The same panel as the cover of an album (380px wide, 380px high and 3rem more under the popular tracks, which the
      page lays over its lower edge), with a round portrait. The portrait is blurred behind itself into a faint field, so
      the round shape stands on its own colour and not on the grey of the card; the badge of a verified artist sits on
      the rim of the circle, where a round picture has room for it. -->

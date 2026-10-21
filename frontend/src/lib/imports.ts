@@ -103,6 +103,8 @@ export function tookTone(ms: number): Exclude<Tone, 'muted'> {
 export const isProblem = (row: Pick<RequestRow, 'status_code' | 'attempt' | 'elapsed_ms'>) =>
 	requestTone(row) !== 'good' || row.attempt > 1 || tookTone(row.elapsed_ms) === 'bad';
 
+export const formatMs = (ms: number) => (ms < 1000 ? `${ms} ms` : `${(ms / 1000).toFixed(1)} s`);
+
 export function formatBytes(bytes: number | null) {
 	if (bytes === null) return '—';
 	return bytes < 1024 ? `${bytes} B` : `${(bytes / 1024).toFixed(bytes < 10240 ? 1 : 0)} KB`;

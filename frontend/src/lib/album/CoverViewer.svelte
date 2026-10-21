@@ -39,10 +39,10 @@
 
 <svelte:window {onkeydown} />
 
-<!-- Between the picture and the edge of the screen, on each side: the half next to the picture turns the
-     cover over (the left one back, the right one forward), the outer half closes the viewer; the picture
-     itself does nothing. On the first and the last cover there is nothing to turn to: no icon, no zone,
-     and the whole side closes. The picture is a box of one size (`--s`), so these zones never move. The
+<!-- Turning the cover over: the left half of the picture goes back and its right half goes forward, and so does the
+     half of each side next to the picture (between it and the edge of the screen); the outer half of a side closes
+     the viewer. On the first and the last cover there is nothing to turn to: no icon, no zone, and the whole side
+     closes (the picture does nothing there). The picture is a box of one size (`--s`), so these zones never move. The
      buttons are bare icons: grey, white when the pointer is in their zone. -->
 <div
 	role="dialog"
@@ -92,9 +92,29 @@
 				referrerpolicy="no-referrer"
 				class="size-full rounded-lg object-cover shadow-2xl"
 			/>
+			{#if index > 0}
+				<button
+					type="button"
+					tabindex="-1"
+					aria-label="Previous cover"
+					class="absolute inset-y-0 left-0 w-1/2 cursor-pointer"
+					onclick={() => go(-1)}
+					{...zone('prev')}
+				></button>
+			{/if}
+			{#if index < covers.length - 1}
+				<button
+					type="button"
+					tabindex="-1"
+					aria-label="Next cover"
+					class="absolute inset-y-0 right-0 w-1/2 cursor-pointer"
+					onclick={() => go(1)}
+					{...zone('next')}
+				></button>
+			{/if}
 			{#if covers.length > 1}
 				<p
-					class="tabular absolute bottom-3 left-1/2 -translate-x-1/2 rounded-full bg-black/90 px-3 py-1 text-xs text-white/90"
+					class="tabular pointer-events-none absolute bottom-3 left-1/2 -translate-x-1/2 rounded-full bg-black/90 px-3 py-1 text-xs text-white/90"
 				>
 					{index + 1} / {covers.length}
 				</p>

@@ -115,6 +115,8 @@ async def test_songs_by_role_with_all_the_roles_of_each(
     assert both["total"] == 1
     own = everything["items"][1]
     assert (own["genre"], own["album"]) == ("Rock", "Album")
+    assert own["producers"] == [{"id": thom, "base_name": "Thom"}]
+    assert everything["items"][0]["producers"] == []  # a song nobody is credited as its producer
     views = (await api.get(f"/api/v1/artists/{thom}/songs?sort=views")).json()["items"]
     assert views[0]["base_name"] == "Produced"  # no views goes last
 

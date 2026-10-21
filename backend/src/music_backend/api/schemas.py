@@ -39,6 +39,11 @@ class Page[T](BaseModel):
         return cls(items=items, total=total, limit=paging.limit, offset=paging.offset)
 
 
+class ArtistName(BaseModel):
+    id: int
+    base_name: str
+
+
 class ArtistRef(BaseModel):
     id: int
     genius_id: int | None
